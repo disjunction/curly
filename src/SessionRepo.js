@@ -5,14 +5,14 @@ class SessionRepo {
   constructor (runtime) {
     this.runtime = runtime
 
-    if (!runtime.env.CURLY_PPID) {
-      throw new Error('CURLY_PPID expected in env. Not running as child of curly.sh?')
+    if (!runtime.env.SCURL_PPID) {
+      throw new Error('SCURL_PPID expected in env. Not running as child of scurl.sh?')
     }
-    this.ppid = String(runtime.env.CURLY_PPID)
+    this.ppid = String(runtime.env.SCURL_PPID)
   }
 
   getStorePath () {
-    return this.runtime.opts.sessionStore || '/tmp/curly_sessions.json'
+    return this.runtime.opts.sessionStore || '/tmp/scurl_sessions.json'
   }
 
   get sessions () {

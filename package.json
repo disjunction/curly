@@ -1,9 +1,9 @@
 {
-  "name": "curly",
+  "name": "scurl",
   "version": "0.0.2",
   "description": "CLI wrapper around curl with context bound defaults",
   "bin": {
-    "curly": "src/curly.sh"
+    "scurl": "src/scurl.sh"
   },
   "main": "src/index.js",
   "scripts": {

@@ -12,7 +12,7 @@ class ContextRepo {
   }
 
   getContextPath () {
-    const path = this.opts.contextPath || process.env.HOME + '/.curly/contexts'
+    const path = this.opts.contextPath || process.env.HOME + '/.scurl/contexts'
     return makedir.sync(path)
   }
 
