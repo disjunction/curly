@@ -38,7 +38,7 @@ function applyInstructions (runtime, instructions) {
   if (instructions.headers) {
     R.forEachObjIndexed((value, name) => {
       runtime.newArgv = R.pipe(
-        R.prepend("'" + name + ': ' + value + "'"),
+        R.prepend(name + ': ' + value),
         R.prepend('-H')
       )(runtime.newArgv)
     }, instructions.headers)
@@ -71,8 +71,8 @@ module.exports = function (runtime) {
   runtime.newArgv = R.prepend('-sS', runtime.newArgv)
   runtime.newArgv = runtime.newArgv.filter(opt => !ownBooleans.includes(opt))
 
-  const command = 'curl ' + runtime.newArgv.join(' ')
   if (runtime.argv['dry-run']) {
+    const command = 'curl ' + runtime.newArgv.map(a => `"${a}"`).join(' ')
     console.info(command)
   } else {
     const res = spawnSync('curl', runtime.newArgv)

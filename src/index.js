@@ -4,6 +4,7 @@ const SessionRepo = require('./SessionRepo')
 const ContextRepo = require('./ContextRepo')
 const SessionCommand = require('./SessionCommand')
 const ContextCommand = require('./ContextCommand')
+const HelpCommand = require('./HelpCommand')
 
 const runtime = {
   env: process.env,
@@ -29,7 +30,7 @@ if (runtime.argv._.length) {
       break
 
     case 'help':
-      console.info('ok\n')
+      (new HelpCommand(runtime)).run()
       break
 
     case 'delete':

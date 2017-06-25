@@ -33,13 +33,11 @@ class SessionRepo {
   }
 
   set session (session) {
-    this._session = Object.assign({}, session)
-    if (!this._session.ppid) {
-      this._session.ppid = this.ppid
-    }
-    if (!this._session.id) {
-      this._session.id = uuid.v1()
-    }
+    this._session = Object.assign({
+      ppid: this.ppid,
+      id: uuid.v1(),
+      context: 'default'
+    }, session)
     this.sessions[this.ppid] = this._session
   }
 

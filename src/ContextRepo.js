@@ -1,6 +1,7 @@
 const fs = require('fs')
 const makedir = require('make-dir')
 const yaml = require('js-yaml')
+const R = require('ramda')
 
 class ContextRepo {
   constructor (opts) {
@@ -15,16 +16,27 @@ class ContextRepo {
     return makedir.sync(path)
   }
 
+  getContextFilename () {
+    const session = this.opts.sessionRepo.session
+    const name = session.context || 'default'
+    const contextPath = this.getContextPath()
+    return contextPath + '/' + name + '.yaml'
+  }
+
   get contexts () {
     if (this._contexts) {
       return this._contexts
     }
     try {
-      this._sessions = require(this.getStorePath())
+      const filenames = fs.readdirSync(this.getContextPath())
+      this._contexts = filenames
+        .filter(R.match(/\.yaml$/))
+        .map(R.replace(/\.yaml$/, ''))
     } catch (e) {
-      this._sessions = {}
+      console.error(e)
+      this._contexts = []
     }
-    return this._sessions
+    return this._contexts
   }
 
   get context () {
@@ -33,8 +45,7 @@ class ContextRepo {
     }
     const session = this.opts.sessionRepo.session
     const name = session.context || 'default'
-    const contextPath = this.getContextPath()
-    const filePath = contextPath + '/' + name + '.yaml'
+    const filePath = this.getContextFilename()
     this._context = fs.existsSync(filePath)
       ? yaml.safeLoad(fs.readFileSync(filePath))
       : {}
