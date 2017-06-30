@@ -19,6 +19,46 @@ function matchRule (runtime, rule) {
   return false
 }
 
+/**
+ * try to beautify euristically, since we have no access
+ * to returned ehaders
+ */
+function tryBeautify (subject) {
+  let str = String(subject).trim()
+  let prefix = ''
+
+  // headers have been dumped - skip them first
+  if (str.match(/^HTTP\/[\d.]+\s\d+\s/)) {
+    const lines = str.split('\n')
+    let i = 1
+    let line = lines[0]
+    do {
+      prefix += line + '\n'
+      line = lines[++i]
+    } while (line.trim() !== '' && i < lines.length - 1)
+    prefix += '\n'
+    str = lines.slice(i).join('\n').trim()
+  }
+
+  // if contents looks like json, then try to beutify
+  if (str.length > 3 && str.match(/^{.*}$/)) {
+    try {
+      const json = JSON.parse(str)
+      str = JSON.stringify(json, null, 2) + '\n'
+    } catch (e) {
+      // do nothing
+    }
+
+    subject = prefix + str
+  }
+
+  // make sure there is a trailing linebreak to keep console nice
+  if (subject && subject[subject.length - 1] !== '\n') {
+    subject += '\n'
+  }
+  return subject
+}
+
 function collectInstructions (runtime) {
   const context = runtime.contextRepo.context
   if (!context.rules || !context.rules.length) {
@@ -26,11 +66,9 @@ function collectInstructions (runtime) {
   }
 
   return context.rules.reduce((result, rule) => {
-    if (matchRule(runtime, rule)) {
-      return R.mergeDeepRight(result, R.omit(['match'], rule))
-    } else {
-      return result
-    }
+    return matchRule(runtime, rule)
+      ? R.mergeDeepRight(result, R.omit(['match'], rule))
+      : result
   }, {})
 }
 
@@ -42,6 +80,12 @@ function applyInstructions (runtime, instructions) {
         R.prepend('-H')
       )(runtime.newArgv)
     }, instructions.headers)
+  }
+  if (instructions.auth) {
+    runtime.newArgv = R.pipe(
+      R.prepend(instructions.auth.user + ':' + instructions.auth.pass),
+      R.prepend('-u')
+    )(runtime.newArgv)
   }
   if (instructions.baseUrl) {
     runtime.argv._.forEach(value => {
@@ -76,8 +120,15 @@ module.exports = function (runtime) {
     console.info(command)
   } else {
     const res = spawnSync('curl', runtime.newArgv)
-    process.stdout.write(res.stdout.toString().slice(0, -1))
-    console.error(res.stderr.toString().slice(0, -1))
+    let stdout = res.stdout.toString()
+
+    if (!instructions.rawOutput) {
+      stdout = tryBeautify(stdout)
+    }
+
+    process.stdout.write(stdout)
+
+    process.stderr.write(res.stderr.toString())
     runtime.exitCode = res.status
   }
 }

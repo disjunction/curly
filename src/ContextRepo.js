@@ -23,6 +23,23 @@ class ContextRepo {
     return contextPath + '/' + name + '.yaml'
   }
 
+  copy (from, to) {
+    const contextPath = this.getContextPath()
+    const fromFilename = contextPath + '/' + from + '.yaml'
+    if (!fs.existsSync(fromFilename)) {
+      throw new Error('file not found: ' + fromFilename)
+    }
+    const content = fs.readFileSync(fromFilename)
+    const toFilename = contextPath + '/' + to + '.yaml'
+    fs.writeFileSync(toFilename, content)
+  }
+
+  delete (contextName) {
+    const contextPath = this.getContextPath()
+    const filename = contextPath + '/' + contextName + '.yaml'
+    return fs.unlinkSync(filename)
+  }
+
   get contexts () {
     if (this._contexts) {
       return this._contexts

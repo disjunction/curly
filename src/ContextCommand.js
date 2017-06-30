@@ -8,31 +8,57 @@ class ContextCommand {
 
   run () {
     const args = this.runtime.argv._
-    if (args.length === 1) {
-      console.info(yaml.safeDump(this.runtime.contextRepo.context))
-      return
-    }
+    switch (args[0]) {
+      case 'context': {
+        console.info(yaml.safeDump(this.runtime.contextRepo.context))
+        return true
+      }
 
-    switch (args[1]) {
-      case 'reset':
+      case 'reset': {
         this.runtime.contextRepo.context = {}
-        break
-      case 'list':
+        return true
+      }
+
+      case 'ls':
+      case 'list': {
         const contexts = this.runtime.contextRepo.contexts
         contexts.forEach(name => console.info(name))
-        break
-      case 'edit':
+        return true
+      }
+
+      case 'edit': {
         const editor = process.env.EDITOR || 'vi'
         const filename = this.runtime.contextRepo.getContextFilename()
         spawnSync(editor, [filename], {stdio: 'inherit'})
-        break
-      default:
+        return true
+      }
+
+      case 'clone': {
+        const contextName = this.runtime.sessionRepo.session.context
+        this.runtime.contextRepo.copy(contextName, args[1])
+        this.runtime.sessionRepo.session.context = args[1]
+        return true
+      }
+
+      case 'rm':
+      case 'remove': {
+        const contextName = this.runtime.sessionRepo.session.context
+        this.runtime.contextRepo.delete(args[1])
+        if (contextName === args[1]) {
+          this.runtime.sessionRepo.session.context = 'default'
+        }
+        return true
+      }
+
+      case 'select': {
         const contextName = args[1]
         if (!this.runtime.contextRepo.contexts.includes(contextName)) {
           console.warn('no context file found for:', contextName)
           console.warn('to create one call: scurl context edit')
         }
         this.runtime.sessionRepo.session.context = contextName
+        return true
+      }
     }
   }
 }
