@@ -25,10 +25,6 @@ if (runtime.argv._.length) {
       (new SessionCommand(runtime)).run()
       break
 
-    case 'context':
-      (new ContextCommand(runtime)).run()
-      break
-
     case 'help':
       (new HelpCommand(runtime)).run()
       break
@@ -46,8 +42,11 @@ if (runtime.argv._.length) {
       break
 
     default:
-      runtime.method = 'GET'
-      runtime.callCurl = true
+      const result = (new ContextCommand(runtime)).run()
+      if (!result) {
+        runtime.method = 'GET'
+        runtime.callCurl = true
+      }
   }
 
   if (runtime.callCurl) {
