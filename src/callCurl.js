@@ -98,6 +98,11 @@ function applyInstructions (runtime, instructions) {
   }
 }
 
+function escapeParameter (param) {
+  return param.match(/[\s'!&?]+/) ?
+    `"${param}"` : param;
+}
+
 module.exports = function (runtime) {
   const instructions = R.mergeDeepRight(
     collectInstructions(runtime),
@@ -105,7 +110,7 @@ module.exports = function (runtime) {
   )
   applyInstructions(runtime, instructions)
 
-  if (runtime.method) {
+  if (runtime.method && runtime.method !== 'GET') {
     runtime.newArgv = R.pipe(
       R.prepend(runtime.method),
       R.prepend('-X')
@@ -116,7 +121,7 @@ module.exports = function (runtime) {
   runtime.newArgv = runtime.newArgv.filter(opt => !ownBooleans.includes(opt))
 
   if (runtime.argv['dry-run']) {
-    const command = 'curl ' + runtime.newArgv.map(a => `"${a}"`).join(' ')
+    const command = 'curl ' + runtime.newArgv.map(escapeParameter).join(' ')
     console.info(command)
   } else {
     const res = spawnSync('curl', runtime.newArgv)
