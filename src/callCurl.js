@@ -1,5 +1,7 @@
 const R = require('ramda')
 const spawnSync = require('child_process').spawnSync
+const highlight = require('cli-highlight').highlight
+
 const ownBooleans = [
   '--dry-run'
 ]
@@ -26,6 +28,7 @@ function matchRule (runtime, rule) {
 function tryBeautify (subject) {
   let str = String(subject).trim()
   let prefix = ''
+  let language
 
   // headers have been dumped - skip them first
   if (str.match(/^HTTP\/[\d.]+\s\d+\s/)) {
@@ -45,8 +48,16 @@ function tryBeautify (subject) {
     try {
       const json = JSON.parse(str)
       str = JSON.stringify(json, null, 2) + '\n'
+      language = 'javascript'
     } catch (e) {
       // do nothing
+    }
+
+    if (language) {
+      str = highlight(str, {
+        language,
+        theme: 'Hybrid'
+      })
     }
 
     subject = prefix + str
@@ -56,6 +67,7 @@ function tryBeautify (subject) {
   if (subject && subject[subject.length - 1] !== '\n') {
     subject += '\n'
   }
+
   return subject
 }
 

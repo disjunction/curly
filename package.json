@@ -12,6 +12,7 @@
   "author": "Konstantin Pogorelov <or@pluseq.com> (https://github.com/disjunction)",
   "license": "ISC",
   "dependencies": {
+    "cli-highlight": "^1.1.4",
     "js-yaml": "^3.8.4",
     "make-dir": "^1.0.0",
     "optimist": "^0.6.1",
