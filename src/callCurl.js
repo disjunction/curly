@@ -1,10 +1,17 @@
 const R = require('ramda')
 const spawnSync = require('child_process').spawnSync
 const highlight = require('cli-highlight').highlight
+const supportsColor = require('supports-color').stdout;
 
 const ownBooleans = [
-  '--dry-run'
+  '--dry-run',
+  '--no-color',
+  '--color'
 ]
+
+function hi(str, opts) {
+  return supportsColor ? highlight(str, opts) : str;
+}
 
 function matchRule (runtime, rule) {
   if (typeof rule !== 'object' || !rule.match) {
@@ -54,7 +61,7 @@ function tryBeautify (subject) {
     }
 
     if (language) {
-      str = highlight(str, {
+      str = hi(str, {
         language,
         theme: 'Hybrid'
       })
