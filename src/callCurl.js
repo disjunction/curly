@@ -1,8 +1,17 @@
 const R = require('ramda')
 const spawnSync = require('child_process').spawnSync
+const highlight = require('cli-highlight').highlight
+const supportsColor = require('supports-color').stdout;
+
 const ownBooleans = [
-  '--dry-run'
+  '--dry-run',
+  '--no-color',
+  '--color'
 ]
+
+function hi(str, opts) {
+  return supportsColor ? highlight(str, opts) : str;
+}
 
 function matchRule (runtime, rule) {
   if (typeof rule !== 'object' || !rule.match) {
@@ -26,6 +35,7 @@ function matchRule (runtime, rule) {
 function tryBeautify (subject) {
   let str = String(subject).trim()
   let prefix = ''
+  let language
 
   // headers have been dumped - skip them first
   if (str.match(/^HTTP\/[\d.]+\s\d+\s/)) {
@@ -45,8 +55,16 @@ function tryBeautify (subject) {
     try {
       const json = JSON.parse(str)
       str = JSON.stringify(json, null, 2) + '\n'
+      language = 'javascript'
     } catch (e) {
       // do nothing
+    }
+
+    if (language) {
+      str = hi(str, {
+        language,
+        theme: 'Hybrid'
+      })
     }
 
     subject = prefix + str
@@ -56,6 +74,7 @@ function tryBeautify (subject) {
   if (subject && subject[subject.length - 1] !== '\n') {
     subject += '\n'
   }
+
   return subject
 }
 
@@ -98,6 +117,11 @@ function applyInstructions (runtime, instructions) {
   }
 }
 
+function escapeParameter (param) {
+  return param.match(/[\s'!&?]+/) ?
+    `"${param}"` : param;
+}
+
 module.exports = function (runtime) {
   const instructions = R.mergeDeepRight(
     collectInstructions(runtime),
@@ -105,7 +129,7 @@ module.exports = function (runtime) {
   )
   applyInstructions(runtime, instructions)
 
-  if (runtime.method) {
+  if (runtime.method && runtime.method !== 'GET') {
     runtime.newArgv = R.pipe(
       R.prepend(runtime.method),
       R.prepend('-X')
@@ -116,7 +140,7 @@ module.exports = function (runtime) {
   runtime.newArgv = runtime.newArgv.filter(opt => !ownBooleans.includes(opt))
 
   if (runtime.argv['dry-run']) {
-    const command = 'curl ' + runtime.newArgv.map(a => `"${a}"`).join(' ')
+    const command = 'curl ' + runtime.newArgv.map(escapeParameter).join(' ')
     console.info(command)
   } else {
     const res = spawnSync('curl', runtime.newArgv)

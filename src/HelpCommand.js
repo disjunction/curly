@@ -22,6 +22,7 @@ Usage:
   Options:
       --dry-run                      - print curl command instead of executing
       --raw-output                   - do not beautify output
+      --no-color                     - switch off highlighting
 
       ... all native curl options will be passed through
 `)

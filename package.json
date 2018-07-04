@@ -12,10 +12,12 @@
   "author": "Konstantin Pogorelov <or@pluseq.com> (https://github.com/disjunction)",
   "license": "WTFPL",
   "dependencies": {
+    "cli-highlight": "^1.1.4",
     "js-yaml": "^3.8.4",
     "make-dir": "^1.0.0",
     "optimist": "^0.6.1",
     "ramda": "^0.24.1",
+    "supports-color": "^5.0.0",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
