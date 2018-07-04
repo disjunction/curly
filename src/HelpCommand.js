@@ -5,7 +5,7 @@ class HelpCommand {
 
   run () {
     const args = this.runtime.argv._
-    if (args.length === 1) {
+    if (args.length <= 1) {
       console.info(`
 Usage:
   scurl select my_context            - select context for current session

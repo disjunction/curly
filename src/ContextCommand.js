@@ -54,7 +54,7 @@ class ContextCommand {
         const contextName = args[1]
         if (!this.runtime.contextRepo.contexts.includes(contextName)) {
           console.warn('no context file found for:', contextName)
-          console.warn('to create one call: scurl context edit')
+          console.warn('to create one call: scurl edit')
         }
         this.runtime.sessionRepo.session.context = contextName
         return true

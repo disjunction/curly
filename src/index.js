@@ -55,4 +55,6 @@ if (runtime.argv._.length) {
 
   runtime.sessionRepo.persist()
   process.exit(runtime.exitCode)
+} else {
+  ;(new HelpCommand(runtime)).run()
 }
